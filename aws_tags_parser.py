@@ -1,14 +1,16 @@
 import sys
 import boto3
 
+# python aws_tags.py ec2,rds eu-central-1,us-east-1
+
 def get_rds_tags(region):
     rds = boto3.client('rds', region_name=region)
     response = rds.describe_db_instances()
-
-    for db_instance in response['DBInstances']:
-        db_instance_identifier = db_instance['DBInstanceIdentifier']
-        tags = rds.list_tags_for_resource(ResourceName=db_instance_identifier)['TagList']
-        print(f"Tags for RDS instance {db_instance_identifier} in region {region}: {tags}")
+    if response: 
+        for db_instance in response['DBInstances']:
+            db_instance_Arn = db_instance['DBInstanceArn']
+            tags = rds.list_tags_for_resource(ResourceName=db_instance_Arn)['TagList']
+            print(f"Tags for RDS instance {db_instance_Arn} in region {region}: {tags}")
 
 def get_ec2_tags(region):
     ec2 = boto3.resource('ec2', region_name=region)
@@ -58,10 +60,12 @@ def get_cloudfront_tags(region):
     cloudfront = boto3.client('cloudfront', region_name=region)
     distributions = cloudfront.list_distributions()['DistributionList']['Items']
 
-    for distribution in distributions:
-        distribution_id = distribution['Id']
-        tags = cloudfront.list_tags_for_resource(Resource=distribution_id)['Tags']['Items']
-        print(f"Tags for CloudFront distribution {distribution_id} in region {region}: {tags}")
+    if distributions: 
+        for distribution in distributions:
+            #print (distribution)
+            distribution_arn = distribution['ARN']
+            tags = cloudfront.list_tags_for_resource(Resource=distribution_arn)['Tags']
+            print(f"Tags for CloudFront distribution {distribution_arn} in region {region}: {tags}")
 
 def get_cloudwatch_tags(region):
     cloudwatch = boto3.client('cloudwatch', region_name=region)
